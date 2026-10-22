@@ -5,10 +5,10 @@
 public class BallController : MonoBehaviour
 {
     [Header("Ruch i Kamera")]
-    public float moveForce = 150f; // Zwiększone z 15 na 150, żeby kula żwawiej reagowała
+    public float moveForce = 150f;
     public Transform cameraTransform;
 
-    [Header("Rozmiary")]
+    [Header("Rozmiary (promienie)")]
     public float normalRadius = 0.5f;
     public float smallRadius = 0.3f;
     public float largeRadius = 0.8f;
@@ -20,9 +20,10 @@ public class BallController : MonoBehaviour
     private Rigidbody rb;
     private SphereCollider col;
     private Renderer meshRenderer;
+    private float currentRadius;
 
-    public bool IsLarge => col.radius >= largeRadius - 0.05f;
-    public bool IsSmall => col.radius <= smallRadius + 0.05f;
+    public bool IsLarge => currentRadius >= largeRadius - 0.05f;
+    public bool IsSmall => currentRadius <= smallRadius + 0.05f;
 
     void Awake()
     {
@@ -33,7 +34,10 @@ public class BallController : MonoBehaviour
         if (cameraTransform == null && Camera.main != null)
             cameraTransform = Camera.main.transform;
 
-        SetRadius(normalRadius);
+        // Inicjalizacja domyślnego rozmiaru
+        currentRadius = normalRadius;
+        ApplyRadius(normalRadius);
+
         if (defaultMaterial != null) ApplyMaterial(defaultMaterial);
     }
 
@@ -42,32 +46,46 @@ public class BallController : MonoBehaviour
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        // Kierunek ruchu zależny od kamery
         Vector3 camForward = cameraTransform.forward;
         Vector3 camRight = cameraTransform.right;
         camForward.y = 0f; camRight.y = 0f;
         camForward.Normalize(); camRight.Normalize();
 
         Vector3 moveDir = (camForward * v + camRight * h).normalized;
-
-        // Siła poruszająca kulę
         rb.AddForce(moveDir * moveForce, ForceMode.Force);
     }
 
     void Update()
     {
-        // Zmiana rozmiaru (Q - mała, E - duża)
         if (Input.GetKeyDown(KeyCode.Q)) SetRadius(smallRadius);
         if (Input.GetKeyDown(KeyCode.E)) SetRadius(largeRadius);
     }
 
     public void SetRadius(float newRadius)
     {
-        col.radius = newRadius;
-        transform.localScale = Vector3.one * (newRadius * 2f);
+        if (Mathf.Approximately(currentRadius, newRadius)) return;
 
+        // 1. Przesuwamy kulę w górę/dół, żeby nie lewitowała i nie wchodziła w ziemię
+        float difference = newRadius - currentRadius;
+        transform.position += new Vector3(0, difference, 0);
+
+        // 2. Aplikujemy nowy rozmiar
+        currentRadius = newRadius;
+        ApplyRadius(newRadius);
+
+        // 3. Aktualizacja masy
         if (currentMaterial != null)
             rb.mass = currentMaterial.mass * (newRadius / normalRadius);
+    }
+
+    private void ApplyRadius(float radius)
+    {
+        // Ustawiamy fizyczny promień
+        col.radius = radius;
+
+        // Skalujemy cały obiekt (wizualnie). Domyślny promień w Unity to 0.5.
+        float scaleMultiplier = radius / 0.5f;
+        transform.localScale = Vector3.one * scaleMultiplier;
     }
 
     public void ApplyMaterial(BallMaterialData data)
@@ -77,9 +95,9 @@ public class BallController : MonoBehaviour
 
         rb.linearDamping = data.drag;
         rb.angularDamping = data.angularDrag;
-        rb.mass = data.mass * (col.radius / normalRadius);
+        rb.mass = data.mass * (currentRadius / normalRadius);
 
-        if (data.visualMaterial != null)
+        if (data.visualMaterial != null && meshRenderer != null)
             meshRenderer.material = data.visualMaterial;
 
         Debug.Log("Zmieniono materiał na: " + data.materialName);

@@ -10,10 +10,14 @@ public class GameManager : MonoBehaviour
     public float startingTime = 300f;
     public int pointsPerSecond = 10;
 
-    [Header("UI")]
+    [Header("UI - HUD")]
     public Text livesText;
     public Text timeText;
     public Text scoreText;
+
+    [Header("UI - Ekran Końcowy")]
+    public GameObject winPanel;
+    public Text finalScoreText;
 
     [Header("Respawn")]
     public GameObject playerBall;
@@ -38,6 +42,7 @@ public class GameManager : MonoBehaviour
         if (playerBall != null)
             currentRespawnPos = playerBall.transform.position;
 
+        if (winPanel != null) winPanel.SetActive(false);
         UpdateUI();
     }
 
@@ -85,10 +90,23 @@ public class GameManager : MonoBehaviour
     {
         if (!isGameActive) return;
         isGameActive = false;
+
         int timeBonus = Mathf.CeilToInt(timeLeft) * pointsPerSecond;
         currentScore += timeBonus;
-        UpdateScoreUI();
-        Debug.Log("POZIOM UKOŃCZONY! Bonus: +" + timeBonus + " pkt. Wynik: " + currentScore);
+
+        if (scoreText != null) scoreText.text = "Punkty: " + currentScore; // Aktualizacja na HUD
+
+        // POKAZUJEMY EKRAN ZWYCIĘSTWA I ZATRZYMUJEMY CZAS
+        if (winPanel != null)
+        {
+            winPanel.SetActive(true);
+            if (finalScoreText != null)
+                finalScoreText.text = "Zdobyte punkty: " + currentScore;
+        }
+
+        // ZATRZYMANIE CZASU W GRZE (Pauza)
+        Time.timeScale = 0f;
+        Debug.Log("POZIOM UKOŃCZONY!");
     }
 
     private void GameOver(string reason)
@@ -96,6 +114,7 @@ public class GameManager : MonoBehaviour
         if (!isGameActive) return;
         isGameActive = false;
         Debug.Log("GAME OVER: " + reason);
+        Time.timeScale = 0f; // Zatrzymanie czasu przy Game Over
     }
 
     private void UpdateUI() { UpdateLivesUI(); UpdateTimeUI(); UpdateScoreUI(); }
