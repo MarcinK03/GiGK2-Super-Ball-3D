@@ -9,10 +9,11 @@ public class BallController : MonoBehaviour
     public Transform cameraTransform;
 
     [Header("Rozmiary (promienie)")]
-    public float normalRadius = 0.5f;
-    public float smallRadius = 0.3f;
-    public float largeRadius = 0.8f;
-
+    public  float normalRadius = 0.5f;
+    public  float smallRadius = 0.3f;
+    public  float largeRadius = 0.8f;
+    public float[] radiusTable;
+    private int currentRadiusIndex = 1; // 0 - small, 1 - normal, 2 - large
     [Header("Materiały")]
     public BallMaterialData defaultMaterial;
     public BallMaterialData currentMaterial;
@@ -30,7 +31,7 @@ public class BallController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         col = GetComponent<SphereCollider>();
         meshRenderer = GetComponent<Renderer>();
-
+        radiusTable = new float[] { smallRadius, normalRadius, largeRadius };
         if (cameraTransform == null && Camera.main != null)
             cameraTransform = Camera.main.transform;
 
@@ -57,17 +58,23 @@ public class BallController : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Q)) SetRadius(smallRadius);
-        if (Input.GetKeyDown(KeyCode.E)) SetRadius(largeRadius);
+        if (Input.GetKeyDown(KeyCode.Q)) SetRadius(-1);
+        if (Input.GetKeyDown(KeyCode.E)) SetRadius(1);
     }
 
-    public void SetRadius(float newRadius)
+    public void SetRadius(int step)
     {
-        if (Mathf.Approximately(currentRadius, newRadius)) return;
+        int newRadiusIndex = currentRadiusIndex + step;
 
-        // 1. Przesuwamy kulę w górę/dół, żeby nie lewitowała i nie wchodziła w ziemię
-        float difference = newRadius - currentRadius;
-        transform.position += new Vector3(0, difference, 0);
+        if (newRadiusIndex < 0 || newRadiusIndex >= radiusTable.Length) return;
+        if (newRadiusIndex == currentRadiusIndex) return;
+
+        float newRadius = radiusTable[newRadiusIndex];
+
+     
+
+        // ZAPIS NOWEGO INDEKSU 
+        currentRadiusIndex = newRadiusIndex;
 
         // 2. Aplikujemy nowy rozmiar
         currentRadius = newRadius;
@@ -76,14 +83,13 @@ public class BallController : MonoBehaviour
         // 3. Aktualizacja masy
         if (currentMaterial != null)
             rb.mass = currentMaterial.mass * (newRadius / normalRadius);
+
+        rb.WakeUp();
     }
 
     private void ApplyRadius(float radius)
     {
         // Ustawiamy fizyczny promień
-        col.radius = radius;
-
-        // Skalujemy cały obiekt (wizualnie). Domyślny promień w Unity to 0.5.
         float scaleMultiplier = radius / 0.5f;
         transform.localScale = Vector3.one * scaleMultiplier;
     }
