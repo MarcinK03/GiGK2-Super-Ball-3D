@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7e099bf63213c024d911a46adb9274b5, type: 3}
-  m_Name: StoneData
+  m_Name: WoodData
   m_EditorClassIdentifier: Assembly-CSharp::BallMaterialData
-  materialName: Stone
-  mass: 3
-  drag: 0.1
+  materialName: Wood
+  mass: 1
+  drag: 0.5
   angularDrag: 0.05
-  visualMaterial: {fileID: 2100000, guid: e588d8bfdd2678c46a10c24afe180447, type: 2}
+  visualMaterial: {fileID: 2100000, guid: 1811ce06da77ca843b6130ac5fab2b55, type: 2}

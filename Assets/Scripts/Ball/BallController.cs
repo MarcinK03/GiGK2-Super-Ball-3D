@@ -44,16 +44,17 @@ public class BallController : MonoBehaviour
 
     void FixedUpdate()
     {
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
 
         Vector3 camForward = cameraTransform.forward;
         Vector3 camRight = cameraTransform.right;
         camForward.y = 0f; camRight.y = 0f;
         camForward.Normalize(); camRight.Normalize();
 
-        Vector3 moveDir = (camForward * v + camRight * h).normalized;
+        Vector3 moveDir = (camForward * vertical + camRight * horizontal).normalized;
         rb.AddForce(moveDir * moveForce, ForceMode.Force);
+       
     }
 
     void Update()
