@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BallMaterialData
   materialName: Wood
   mass: 1
-  drag: 0.5
+  drag: 0.7
   angularDrag: 0.05
   visualMaterial: {fileID: 2100000, guid: 1811ce06da77ca843b6130ac5fab2b55, type: 2}
