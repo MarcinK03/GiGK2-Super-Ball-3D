@@ -9,6 +9,11 @@ public class KillZone : MonoBehaviour
         {
             // Wywołujemy utratę życia z GameManagera
             GameManager.Instance.LoseLife();
+            if (GameManager.Instance.currentLives == 0)
+            {
+                GameManager.Instance.GameOver("Brak żyć!");
+            }
         }
+
     }
 }

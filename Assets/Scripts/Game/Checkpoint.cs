@@ -4,7 +4,7 @@
 public class Checkpoint : MonoBehaviour
 {
     public int scoreReward = 100;
-    public float timeReward = 15f; // Ile sekund dodaje checkpoint
+    public float timeReward = 10f; // Ile sekund dodaje checkpoint
     private bool activated = false;
 
     void Reset() { GetComponent<Collider>().isTrigger = true; }

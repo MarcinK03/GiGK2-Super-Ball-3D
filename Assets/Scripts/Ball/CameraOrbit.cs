@@ -7,7 +7,7 @@ public class CameraOrbit : MonoBehaviour
     public float height = 3f;
     public float rotateSpeed = 100f;
 
-    private float currentYaw = 0f;
+    private float currentYaw = 90f;
     private float currentPitch = 20f; // Kąt patrzenia z góry (20 stopni)
 
     void LateUpdate()

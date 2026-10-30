@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
@@ -7,8 +8,9 @@ public class GameManager : MonoBehaviour
 
     [Header("Ustawienia poziomu")]
     public int startingLives = 3;
-    public float startingTime = 300f;
+    public float startingTime = 200f;
     public int pointsPerSecond = 10;
+    public Vector3 startingPosition = new Vector3(0, 0.546f, 0);
 
     [Header("UI - HUD")]
     public Text livesText;
@@ -17,12 +19,14 @@ public class GameManager : MonoBehaviour
 
     [Header("UI - Ekran Końcowy")]
     public GameObject winPanel;
+    public GameObject losePanel;
     public Text finalScoreText;
+
 
     [Header("Respawn")]
     public GameObject playerBall;
 
-    private int currentLives;
+    public int currentLives;
     private float timeLeft;
     private int currentScore = 0;
     private Vector3 currentRespawnPos;
@@ -40,9 +44,11 @@ public class GameManager : MonoBehaviour
         timeLeft = startingTime;
 
         if (playerBall != null)
-            currentRespawnPos = playerBall.transform.position;
+            startingPosition = playerBall.transform.position;
+        currentRespawnPos = playerBall.transform.position;
 
         if (winPanel != null) winPanel.SetActive(false);
+        if (losePanel != null) losePanel.SetActive(false);
         UpdateUI();
     }
 
@@ -68,21 +74,25 @@ public class GameManager : MonoBehaviour
         currentLives--;
         UpdateLivesUI();
 
-        if (currentLives <= 0) GameOver("Brak żyć!");
-        else RespawnPlayer();
+        if (currentLives == 0) GameOver("Brak żyć!");
+        else RespawnPlayer(currentRespawnPos);
     }
 
     public void AddScore(int amount) { if (isGameActive) { currentScore += amount; UpdateScoreUI(); } }
     public void AddTime(float amount) { if (isGameActive) { timeLeft += amount; UpdateTimeUI(); } }
 
-    public void RespawnPlayer()
+    public void RespawnPlayer(Vector3 pos)
     {
         if (playerBall == null) return;
         Rigidbody rb = playerBall.GetComponent<Rigidbody>();
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
-        playerBall.transform.position = currentRespawnPos;
+
+        playerBall.transform.position = pos;
+
+
     }
+
 
     public void SetCheckpoint(Vector3 newPos) { currentRespawnPos = newPos; }
 
@@ -93,6 +103,7 @@ public class GameManager : MonoBehaviour
 
         int timeBonus = Mathf.CeilToInt(timeLeft) * pointsPerSecond;
         currentScore += timeBonus;
+
 
         if (scoreText != null) scoreText.text = "Punkty: " + currentScore; // Aktualizacja na HUD
 
@@ -109,12 +120,26 @@ public class GameManager : MonoBehaviour
         Debug.Log("POZIOM UKOŃCZONY!");
     }
 
-    private void GameOver(string reason)
+    public void GameOver(string reason)
     {
         if (!isGameActive) return;
         isGameActive = false;
         Debug.Log("GAME OVER: " + reason);
-        Time.timeScale = 0f; // Zatrzymanie czasu przy Game Over
+        Time.timeScale = 0f;
+        if (losePanel != null)
+        {
+            losePanel.SetActive(true);
+            if (finalScoreText != null)
+                finalScoreText.text = "Zdobyte punkty: " + currentScore + "\nPowód: " + reason;
+
+        }
+
+
+    }
+    public void RestartGame()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     private void UpdateUI() { UpdateLivesUI(); UpdateTimeUI(); UpdateScoreUI(); }
